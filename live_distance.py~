@@ -55,10 +55,8 @@ while True:
 	box = np.int0(cv2.cv.BoxPoints(marker))
 	cv2.drawContours(frame, [box], -1, (0, 255, 0), 2)
 	cv2.putText(stream, "%.2fft" % (inches / 12),
-		(stream.shape[1] - 200, stream.shape[0] - 20), cv2.FONT_HERSHEY_SIMPLEX,
-		2.0, (0, 255, 0), 3)
 	cv2.imshow("image", stream)
-	cv2.waitKey(0)
+
 
 	# if the 'q' key is pressed, stop the loop
 	if key == ord("q"):

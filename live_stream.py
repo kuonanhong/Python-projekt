@@ -26,21 +26,35 @@ pts = deque(maxlen=args["buffer"])
 
 # if a video path was not supplied, grab the reference
 # to the webcam
-camera = cv2.VideoCapture(0)
+if not args.get("video", False):
+	camera = cv2.VideoCapture(0)
+
+# otherwise, grab a reference to the video file
+else:
+	camera = cv2.VideoCapture(args["video"])
+
+def distance_to_camera(diameeter, fokaalnekaugus, laiusekohta):
+	return (diameeter * fokaalnekaugus) / laiusekohta
+
+TEATUD_KAUGUS = 20
+TEATUD_DIAMEETER = 6
+
 
 # keep looping
 while True:
 	# grab the current frame
 	(grabbed, frame) = camera.read()
 
+	# if we are viewing a video and we did not grab a frame,
+	# then we have reached the end of the video
+	if args.get("video") and not grabbed:
+		break
+
 	# resize the frame, blur it, and convert it to the HSV
 	# color space
 	frame = imutils.resize(frame, width=600)
 	blurred = cv2.GaussianBlur(frame, (11, 11), 0)
 	hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-	
-	(cnts, _) = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-	c = max(cnts, key = cv2.contourArea)
 
 	# construct a mask for the color "green", then perform
 	# a series of dilations and erosions to remove any small
@@ -64,7 +78,8 @@ while True:
 		((x, y), radius) = cv2.minEnclosingCircle(c)
 		M = cv2.moments(c)
 		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-
+		
+		cv2.MinEnclosingCircle(c)
 		# only proceed if the radius meets a minimum size
 		if radius > 10:
 			# draw the circle and centroid on the frame,
@@ -76,6 +91,7 @@ while True:
 	# update the points queue
 	pts.appendleft(center)
 
+	
 	# loop over the set of tracked points
 	for i in xrange(1, len(pts)):
 		# if either of the tracked points are None, ignore
@@ -88,9 +104,24 @@ while True:
 		thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
 		cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
 
+	fokaalnekaugus = (marker[1][0] * TEATUD_KAUGUS) / TEATUD_DIAMEETER
+
+	sendid = distance_to_camera(TEATUD_KAUGUS, fokaalnekaugus, marker[1][0])
+
+	
+	cv2.putText(frame, str(sendid),
+		(5, 25), cv2.FONT_HERSHEY_SIMPLEX,
+		1.0, (0, 255, 0), 3)
+
+
 	# show the frame to our screen
 	cv2.imshow("Frame", frame) #,mask2)
 	key = cv2.waitKey(1) & 0xFF
+
+
+	
+	
+	
 
 	# if the 'q' key is pressed, stop the loop
 	if key == ord("q"):

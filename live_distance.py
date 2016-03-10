@@ -5,7 +5,8 @@
 import numpy as np
 import cv2
 import imutils
-import cv2
+
+frame = 0
 
 def find_marker(stream):
 	global frame

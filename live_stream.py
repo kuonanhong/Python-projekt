@@ -69,8 +69,11 @@ while True:
 		cv2.CHAIN_APPROX_SIMPLE)[-2]
 	center = None
 
+	marker = [[1]*5 for i in range(5)]
+
 	# only proceed if at least one contour was found
 	if len(cnts) > 0:
+		
 		# find the largest contour in the mask, then use
 		# it to compute the minimum enclosing circle and
 		# centroid
@@ -78,8 +81,7 @@ while True:
 		((x, y), radius) = cv2.minEnclosingCircle(c)
 		M = cv2.moments(c)
 		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-		
-		cv2.MinEnclosingCircle(c)
+		marker = cv2.minEnclosingCircle(c)
 		# only proceed if the radius meets a minimum size
 		if radius > 10:
 			# draw the circle and centroid on the frame,
@@ -104,9 +106,9 @@ while True:
 		thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
 		cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
 
-	fokaalnekaugus = (marker[1][0] * TEATUD_KAUGUS) / TEATUD_DIAMEETER
+	fokaalnekaugus = int((marker[1][0] * TEATUD_KAUGUS) / TEATUD_DIAMEETER)
 
-	sendid = distance_to_camera(TEATUD_KAUGUS, fokaalnekaugus, marker[1][0])
+	sendid = int(distance_to_camera(TEATUD_KAUGUS, fokaalnekaugus, marker[1][0]))
 
 	
 	cv2.putText(frame, str(sendid),

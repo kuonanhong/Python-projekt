@@ -33,8 +33,6 @@ if not args.get("video", False):
 else:
 	camera = cv2.VideoCapture(args["video"])
 
-def distance_to_camera(diameeter, fokaalnekaugus, laiusekohta):
-	return (diameeter * fokaalnekaugus) / laiusekohta
 
 TEATUD_KAUGUS = 20
 TEATUD_DIAMEETER = 6
@@ -69,7 +67,7 @@ while True:
 		cv2.CHAIN_APPROX_SIMPLE)[-2]
 	center = None
 
-	marker = [[1]*5 for i in range(5)]
+	marker = 1
 
 	# only proceed if at least one contour was found
 	if len(cnts) > 0:
@@ -81,7 +79,8 @@ while True:
 		((x, y), radius) = cv2.minEnclosingCircle(c)
 		M = cv2.moments(c)
 		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-		marker = cv2.minEnclosingCircle(c)
+		temp = cv2.minEnclosingCircle(c)
+		marker = temp[1]
 		# only proceed if the radius meets a minimum size
 		if radius > 10:
 			# draw the circle and centroid on the frame,
@@ -106,11 +105,14 @@ while True:
 		thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
 		cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
 
-	fokaalnekaugus = int((marker[1][0] * TEATUD_KAUGUS) / TEATUD_DIAMEETER)
-
-	sendid = int(distance_to_camera(TEATUD_KAUGUS, fokaalnekaugus, marker[1][0]))
-
 	
+	
+	fokaalnekaugus = marker * TEATUD_KAUGUS / TEATUD_DIAMEETER #6ige valem, siin peab markeri all olema vana väärtus
+	
+	sendid = TEATUD_DIAMEETER * fokaalnekaugus / marker #siin markeri uus väärtus, selles on viga 
+
+	print marker, sendid 
+
 	cv2.putText(frame, str(sendid),
 		(5, 25), cv2.FONT_HERSHEY_SIMPLEX,
 		1.0, (0, 255, 0), 3)
